@@ -1,6 +1,6 @@
 const fs = require('fs');
 const permission = require('./permission');
-const { sendText } = require('./util');
+const { sendText } = require('./plugins/util.cjs');
 
 class BotPluginManager {
     constructor() {

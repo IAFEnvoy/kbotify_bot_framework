@@ -1,6 +1,4 @@
 const fs = require('fs');
-const { sendText, sendImg }=require('./util');
-
 //获取元素在数组的下标
 Array.prototype.indexOf = function (val) {
     for (var i = 0; i < this.length; i++)

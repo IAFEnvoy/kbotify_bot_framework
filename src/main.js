@@ -1,6 +1,6 @@
 const { KBotify } = require('kbotify');
 const fs = require('fs');
-const { log, sendText, sendImg } = require('./util');
+const { log, sendText } = require('./plugins/util.cjs');
 const config = require('./config');
 const { BotPluginManager } = require('./plugin');
 
@@ -21,6 +21,7 @@ pluginManager.load(c, client);
 
 
 client.message.on('text', async (e) => {
+    if (e.authorId == client.userId) return;
     log(`<- ${e.author.nickname}(${e.author.id}) [${e.channelName}] ${e.content}`);
     let message = e.content;
 
@@ -28,7 +29,7 @@ client.message.on('text', async (e) => {
         pluginManager.runManagerEvent(client, e, c);
 
     if (message == '菜单' || message == '/help')
-        sendText(client, e.channelId, pluginManager.getMenu(e.group_id));
+        sendText(client, e.channelId, pluginManager.getMenu(e.channelId));
 
     pluginManager.onMessage(client, e);
 

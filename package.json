@@ -2,6 +2,9 @@
   "dependencies": {
     "cnpm": "^9.0.1",
     "kbotify": "^0.2.10",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "mc-server-status": "^2.0.2",
+    "python-shell": "^5.0.0",
+    "request": "^2.88.2"
   }
 }
