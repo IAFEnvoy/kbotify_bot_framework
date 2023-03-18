@@ -1,5 +1,4 @@
 const serverInfo = require('mc-server-status');
-const { sendText, sendImgWithUrl } = require('./util.cjs');
 
 const onMessage = async (client, event) => {
     let message = event.content;
@@ -7,15 +6,15 @@ const onMessage = async (client, event) => {
     if (ms[0] == '/mcping' && ms.length == 2) {
         try {
             let res = await serverInfo.getStatus(ms[1].split(":")[0], ms[1].split(':')[1]);
-            if (res == null) return sendText(client, event.channelId, '查询超时！');
+            if (res == null) return client.sendText(e.channelId, '查询超时！');
             let s = `服务器地址：${ms[1]}\n`;
             s += `描述：${res.description.extra == null ? res.description : res.description.extra.reduce((p, c) => p + c.text, '')}\n`;
             s += `版本：${res.version.name}\n`;
             s += `延迟：${res.ping}ms\n`;
             s += `玩家数量：${res.players.online}/${res.players.max}`;
-            sendText(client, event.channelId, s);
+            client.sendText(e.channelId, s);
         } catch (err) {
-            return sendText(client, event.channelId, '查询超时！');
+            return client.sendText(e.channelId, '查询超时！');
         }
     }
     if (ms[0] == '/mcskin' && ms.length == 2) {
@@ -25,10 +24,10 @@ const onMessage = async (client, event) => {
                 .catch(err => { throw err })
                 .then(res => res.json());
             let uuid = a.id;
-            sendImgWithUrl(client, event.channelId, `https://crafatar.com/renders/body/${uuid}?overlay`, `./src/temp/minecraft/body/${uuid}.png`);
+            client.sendImgWithUrl(e.channelId, `https://crafatar.com/renders/body/${uuid}?overlay`, `./src/temp/minecraft/body/${uuid}.png`);
         } catch (err) {
             console.log(err);
-            sendText(client, event.channelId, '未找到此玩家，请确认是否拼写错误');
+            client.sendText(e.channelId, '未找到此玩家，请确认是否拼写错误');
         }
     }
     if (ms[0] == '/mchead' && ms.length == 2) {
@@ -38,9 +37,9 @@ const onMessage = async (client, event) => {
                 .catch(err => { throw err })
                 .then(res => res.json());
             let uuid = a.id;
-            sendImgWithUrl(client, event.channelId, `https://crafatar.com/renders/head/${uuid}?overlay`, `./src/temp/minecraft/head/${uuid}.png`);
+            client.sendImgWithUrl(e.channelId, `https://crafatar.com/renders/head/${uuid}?overlay`, `./src/temp/minecraft/head/${uuid}.png`);
         } catch (err) {
-            sendText(client, event.channelId, '未找到此玩家，请确认是否拼写错误');
+            client.sendText(e.channelId, event.channelId, '未找到此玩家，请确认是否拼写错误');
         }
     }
     if (ms[0] == '/mcavatar' && ms.length == 2) {
@@ -50,9 +49,9 @@ const onMessage = async (client, event) => {
                 .catch(err => { throw err })
                 .then(res => res.json());
             let uuid = a.id;
-            sendImgWithUrl(client, event.channelId, `https://crafatar.com/avatars/${uuid}?overlay`, `./src/temp/minecraft/avatars/${uuid}.png`);
+            client.sendImgWithUrl(e.channelId, `https://crafatar.com/avatars/${uuid}?overlay`, `./src/temp/minecraft/avatars/${uuid}.png`);
         } catch (err) {
-            sendText(client, event.channelId, '未找到此玩家，请确认是否拼写错误');
+            client.sendText(e.channelId, '未找到此玩家，请确认是否拼写错误');
         }
     }
 }

@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { sendText, sendImg } = require('./util.cjs');
 
 let luckJson = {};
 
@@ -110,14 +109,14 @@ const onMessage = (client, e) => {
                 saveData(e.author.id, data);
                 saveLuckConfig();
             }
-            sendText(client, e.channelId, e.author.nickname + ' 的今日运势\n' + toText(data));
+            client.sendText(e.channelId, e.author.nickname + ' 的今日运势\n' + toText(data));
         } catch (err) {
             console.log(err);
         }
     }
 }
 
-const onLoad = (config, client) => {
+const onLoad = (client) => {
     loadLuckConfig();
 }
 

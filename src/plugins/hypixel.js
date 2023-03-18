@@ -1,4 +1,5 @@
-const { sendText, formatDateTime, formatColor, formatColorFromString, formatNameString, downloadAssets } = require('./util.cjs');
+const { Configurative } = require('kook-bot-ts/dist/utils/config.js');
+const { formatDateTime, formatColor, formatColorFromString, formatNameString, downloadAssets } = require('./util.cjs');
 
 let playerDataJson = {};
 let playerUUID = {};
@@ -119,14 +120,84 @@ const modeList = ['ov', 'g', 'now', 'bw', 'sw', 'mm', 'duel', 'uhc', 'mw', 'bb',
 const getData = {
     "ov": (api) => {
         achievements = api.achievements ?? {};
-        return `${getName(api)}的Hypixel信息：
-等级：${(api.networkExp ?? 0) < 0 ? 1 : (1 - 3.5 + Math.sqrt(12.25 + 0.0008 * (api.networkExp ?? 0))).toFixed(2)} | 人品：${api.karma ?? 0}
-成就点数：${api.achievementPoints ?? 0}
-完成任务：${achievements.general_quest_master ?? 0} | 完成挑战：${achievements.general_challenger ?? 0}
-语言：${formatNameString(api.userLanguage ?? 'ENGLISH')} | Rank赠送：${api?.giftingMeta?.ranksGiven ?? 0}
-首次登入：${formatDateTime(api.firstLogin)}
-上次登入：${formatDateTime(api.lastLogin)}
-上次登出：${formatDateTime(api.lastLogout)}`;
+        return [{
+            "type": "card",
+            "theme": "secondary",
+            "size": "lg",
+            "modules": [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain-text",
+                        "content": getName(api) + "的Hypixel信息："
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "paragraph",
+                        "cols": 3,
+                        "fields": [
+                            {
+                                "type": "kmarkdown",
+                                "content": "**等级**\n" + ((api.networkExp ?? 0) < 0 ? 1 : (1 - 3.5 + Math.sqrt(12.25 + 0.0008 * (api.networkExp ?? 0))).toFixed(2))
+                            },
+                            {
+                                "type": "kmarkdown",
+                                "content": "**成就点数**\n" + api.karma ?? 0
+                            },
+                            {
+                                "type": "kmarkdown",
+                                "content": "**语言**\n" + formatNameString(api.userLanguage ?? 'ENGLISH')
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "paragraph",
+                        "cols": 3,
+                        "fields": [
+                            {
+                                "type": "kmarkdown",
+                                "content": "**完成任务**\n" + achievements.general_quest_master ?? 0
+                            },
+                            {
+                                "type": "kmarkdown",
+                                "content": "**完成挑战**\n" + achievements.general_challenger ?? 0
+                            },
+                            {
+                                "type": "kmarkdown",
+                                "content": "**Rank赠送**\n" + api?.giftingMeta?.ranksGiven ?? 0
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "paragraph",
+                        "cols": 3,
+                        "fields": [
+                            {
+                                "type": "kmarkdown",
+                                "content": "**首次登入**\n" + formatDateTime(api.firstLogin)
+                            },
+                            {
+                                "type": "kmarkdown",
+                                "content": "**上次登入**\n" + formatDateTime(api.lastLogin)
+                            },
+                            {
+                                "type": "kmarkdown",
+                                "content": "**上次登出**\n" + formatDateTime(api.lastLogout)
+                            }
+                        ]
+                    }
+                }
+            ]
+        }]
+
     },
     "bw": (api) => {
         achievements = api.achievements ?? {};
@@ -213,13 +284,27 @@ K+A/D：${(((pit_stats_ptl.kills ?? 0) + (pit_stats_ptl.assists ?? 0)) / (pit_st
     }
 };
 
+const credit1 = {
+    "type": "context",
+    "elements": [{
+        "type": "plain-text",
+        "content": "桌面版：https://www.iafenvoy.net/dl/StarburstOverlay"
+    }]
+}, credit2 = {
+    "type": "context",
+    "elements": [{
+        "type": "plain-text",
+        "content": "Powered By IAFEnvoy"
+    }]
+};
+
 const onMessage = async (client, e) => {
     let message = e.content;
     let ms = message.split(' ');
     if ((ms[0] == '/hyp' || modeList.indexOf(ms[0].substring(1)) != -1 && ms[0].startsWith('/')) && ms.length >= 2) {
         //判断是否是合法id
         if (!/^[A-Za-z0-9_]{1,20}$/.test(ms[1]))
-            return sendText(client, e.channelId, `不合法的id`);
+            return client.sendText(e.channelId, `不合法的id`);
 
         let player = ms[1];
         let cat = '';
@@ -232,34 +317,35 @@ const onMessage = async (client, e) => {
             if (playerDataJson[player] == null || playerDataJson[player].player == null || new Date().getTime() - playerDataJson[player].time > 60 * 1000) {
                 let error = await loadPlayer(player);
                 if (error != null)
-                    return sendText(client, e.channelId, error);
+                    return client.sendText(e.channelId, error);
             }
-            let text = '';
+            let json = '';
             if (cat == 'now')
-                text += await loadStatus(playerDataJson[playerUUID[player].uuid].player, playerUUID[player].uuid);
+                json += await loadStatus(playerDataJson[playerUUID[player].uuid].player, playerUUID[player].uuid);
             else if (cat == 'g')
-                text += await loadGuild(playerDataJson[playerUUID[player].uuid].player, playerUUID[player].uuid);
+                json += await loadGuild(playerDataJson[playerUUID[player].uuid].player, playerUUID[player].uuid);
             else
-                text += getData[cat](playerDataJson[playerUUID[player].uuid].player);
-            text += '\n桌面版下载：https://www.iafenvoy.net/dl/StarburstOverlay（附带实时查询）'
-            sendText(client, e.channelId, text);
+                json = getData[cat](playerDataJson[playerUUID[player].uuid].player);
+            json[0].modules.push(credit1, credit2);
+            client.sendCard(e.channelId, JSON.stringify(json));
         } catch (err) {
             console.log(err);
             if (err.message.indexOf('is not a function') != -1)
-                sendText(client, e.channelId, `未知的分类，当前支持的分类：${modeList}`)
+                client.sendText(e.channelId, `未知的分类，当前支持的分类：${modeList}`)
             else
-                sendText(client, e.channelId, '网络错误，请稍后再试');
+                client.sendText(e.channelId, '网络错误，请稍后再试');
         }
     }
     if (ms[0] == '/hyp' && ms.length == 1) {
-        sendText(client, e.channelId, `当前支持的分类：${modeList}\n使用/hyp xxx bw或者/bw xxx都可以`);
+        client.sendText(e.channelId, `当前支持的分类：${modeList}\n使用/hyp xxx bw或者/bw xxx都可以`);
     }
 }
 
-const onLoad = (c, client) => {
-    if (c.hypixelApiKey == null)
+const onLoad = (client) => {
+    let config = new Configurative('./config/hypixel.json')
+    if (config.data.apikey == null)
         throw new ReferenceError('未在main.json中找到hypixelApiKey键值');
-    apikey = c.hypixelApiKey;
+    apikey = config.data.apikey;
 }
 
 const config = {

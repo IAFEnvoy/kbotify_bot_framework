@@ -1,25 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-const request = require('request');
-
-const log = (text) => console.log(`[${new Date().toLocaleString()}] ${text}`);
-const sendText = (client, target, text) => {
-    log(`-> [${target}] ${text}`);
-    client.API.message.create(1, target, text)
-};
-const sendImg = async (client, target, img) => {
-    console.log(path.resolve(img));
-    let url = await client.API.asset.create(fs.readFileSync(img), {
-        filename: path.basename(img),
-        filepath: path.dirname(img)
-    }).then(res => res.url).catch(err => log(err));
-    log(`-> [${target}] ${url}`);
-    client.API.message.create(2, target, url);
-};
-const sendImgWithUrl = (client, target, url, file_path) => {
-    if (!fs.existsSync(path.dirname(file_path))) fs.mkdirSync(path.dirname(file_path));
-    request(url).pipe(fs.createWriteStream(file_path), { end: true }).on('finish', () => sendImg(client, target, file_path));
-};
 const formatDateTime = (date) => {
     if (date == null) return 'Fail to get';
     date = new Date(date);
@@ -34,7 +12,7 @@ const formatDateTime = (date) => {
     minute = minute < 10 ? ('0' + minute) : minute;
     let second = date.getSeconds();
     second = second < 10 ? ('0' + second) : second;
-    return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
+    return y + '-' + m + '-' + d + ' ' + h + ':' + minute;
 };
 
 const colors = [
@@ -54,4 +32,4 @@ const formatColorFromString = name => colorMap[name.toLowerCase()];
 
 const formatNameString = name => name.toLowerCase().split('_').reduce((ret, word) => ret + word[0].toUpperCase() + word.slice(1) + ' ', '');
 
-module.exports = { sendText, sendImg, sendImgWithUrl, log, formatDateTime, formatColor, formatColorFromString, formatNameString };
+module.exports = { formatDateTime, formatColor, formatColorFromString, formatNameString };

@@ -1,43 +1,14 @@
-const { KBotify } = require('kbotify');
+const KookBot = require('kook-bot-ts').KookBot;
 const fs = require('fs');
-const { log, sendText } = require('./plugins/util.cjs');
-const config = require('./config');
-const { BotPluginManager } = require('./plugin');
 
 console.log(`${fs.readFileSync('./src/logo.txt')}`);//打印logo，此处进行Buffer强制类转
-//初始化
-config.load();
-const c = config.getConfig();
-let ops = c.ops;
 
-const client = new KBotify({
-    mode: 'websocket',
-    token: c.token,
-    ignoreDecryptError: false, // 是否忽略消息解密错误 如果需要可以改为true
-});
+const bot = new KookBot({
+    token: '1/MTU5NTU=/ojQGE+xevoxNB60WZrJm+g==',
+    plugin_folder: './src/plugins/',
+    ops: [2852054623],
+    debug_command: true,
+    enable_ticket_system: true
+})
 
-let pluginManager = new BotPluginManager();
-pluginManager.load(c, client);
-
-
-client.message.on('text', async (e) => {
-    if (e.authorId == client.userId) return;
-    log(`<- ${e.author.nickname}(${e.author.id}) [${e.channelName}] ${e.content}`);
-    let message = e.content;
-
-    if (ops.find(op => op == e.author.id) != null)
-        pluginManager.runManagerEvent(client, e, c);
-
-    if (message == '菜单' || message == '/help')
-        sendText(client, e.channelId, pluginManager.getMenu(e.channelId));
-
-    pluginManager.onMessage(client, e);
-
-    if (e.type == 9 && !e.author.bot) {
-
-    }
-});
-
-client.connect(); // 启动 Bot 
-
-log('Bot Connected');
+bot.connect();

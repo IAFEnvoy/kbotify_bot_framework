@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { sendText, sendImg } = require('./util.cjs');
 
 let todayJson = {};
 
@@ -33,16 +32,16 @@ const onMessage = (client, e) => {
     let message = e.content;
     if (message == '/today') {
         if (new Date().getDay() == 4) {
-            sendText(client, e.channelId, '今天疯狂星期四，v我50');
+            client.sendText(e.channelId, '今天疯狂星期四，v我50');
             return;
         }
-        sendText(client, e.channelId, `您今日的人品是${today(e.author.id)}`);
-        sendText(client, e.channelId, '此功能即将停用，请使用/luck');
+        client.sendText(e.channelId, `您今日的人品是${today(e.author.id)}`);
+        client.sendText(e.channelId, '此功能即将停用，请使用/luck');
         saveTodayConfig();
     }
 }
 
-const onLoad = (config, client) => {
+const onLoad = (client) => {
     loadTodayConfig();
 }
 
